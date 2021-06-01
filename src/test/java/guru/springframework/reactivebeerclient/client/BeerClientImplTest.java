@@ -5,6 +5,7 @@ import guru.springframework.reactivebeerclient.model.BeerDto;
 import guru.springframework.reactivebeerclient.model.BeerPagedList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
@@ -54,6 +55,8 @@ class BeerClientImplTest {
         beerDto.setQuantityOnHand(40);
         beerDto.setPrice(new BigDecimal("24,99"));
 
+        final Mono<ResponseEntity> beer = beerClient.createBeer(beerDto);
+        final ResponseEntity block = beer.block();
     }
 
     @Test
