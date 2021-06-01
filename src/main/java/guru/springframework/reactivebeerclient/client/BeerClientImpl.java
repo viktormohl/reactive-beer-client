@@ -22,11 +22,6 @@ public class BeerClientImpl implements BeerClient {
     private final WebClient webClient;
 
     @Override
-    public Mono<BeerDto> getBeerById(UUID id, Boolean showInventoryOnHand) {
-        return null;
-    }
-
-    @Override
     public Mono<BeerPagedList> listBeers(Integer pageNumber, Integer pageSize, String beerName, String beerStyle, Boolean showInventoryOnHand) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder.path(WebClientProperties.BEER)
@@ -42,8 +37,35 @@ public class BeerClientImpl implements BeerClient {
     }
 
     @Override
+    public Mono<BeerDto> getBeerById(UUID id, Boolean showInventoryOnHand) {
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder.path(WebClientProperties.BEER_BY_ID)
+                        .queryParamIfPresent("showInventoryOnHand", Optional.ofNullable(showInventoryOnHand))
+                        .build(id)
+                )
+                .retrieve()
+                .bodyToMono(BeerDto.class);
+    }
+
+    @Override
+    public Mono<BeerDto> getBeerByUPC(String upc) {
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder.path(WebClientProperties.BEER_BY_UPC)
+                        .build(upc)
+                )
+                .retrieve()
+                .bodyToMono(BeerDto.class);
+    }
+
+    @Override
     public Mono<ResponseEntity> createBeer(BeerDto beerDto) {
         return null;
+
+//        return webClient.put()
+//                .uri(WebClientProperties.BEER)
+//                .bodyValue(beerDto)
+//                .retrieve()
+//                .bodyToMono();
     }
 
     @Override
@@ -56,8 +78,4 @@ public class BeerClientImpl implements BeerClient {
         return null;
     }
 
-    @Override
-    public Mono<BeerDto> getBeerByUPC(String upc) {
-        return null;
-    }
 }

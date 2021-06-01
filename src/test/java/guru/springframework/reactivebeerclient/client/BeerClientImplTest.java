@@ -47,6 +47,34 @@ class BeerClientImplTest {
     }
 
     @Test
+    void getBeerById() {
+        final Mono<BeerPagedList> beerPagedListMono = beerClient.listBeers(1,1, null, null, null);
+        final BeerPagedList pagedList = beerPagedListMono.block();
+        assertThat(pagedList).isNotNull();
+        assertThat(pagedList.getContent().size()).isEqualTo(1);
+        final BeerDto beerDto = pagedList.getContent().get(0);
+
+        final Mono<BeerDto> beerByIdMono = beerClient.getBeerById(beerDto.getId(), null);
+        final BeerDto beer = beerByIdMono.block();
+        assertThat(beer).isNotNull();
+        assertEquals(beerDto, beer);
+    }
+
+    @Test
+    void getBeerByUPC() {
+        final Mono<BeerPagedList> beerPagedListMono = beerClient.listBeers(1, 1, null, null, null);
+        final BeerPagedList pagedList = beerPagedListMono.block();
+        assertThat(pagedList).isNotNull();
+        assertThat(pagedList.getContent().size()).isEqualTo(1);
+        final BeerDto beerDto = pagedList.getContent().get(0);
+
+        final Mono<BeerDto> beerByIdMono = beerClient.getBeerByUPC(beerDto.getUpc());
+        final BeerDto beer = beerByIdMono.block();
+        assertThat(beer).isNotNull();
+        assertEquals(beerDto, beer);
+    }
+
+    @Test
     void createBeer() {
         BeerDto beerDto = new BeerDto();
         beerDto.setBeerName("Franziskaner Weissbier");
@@ -59,9 +87,7 @@ class BeerClientImplTest {
         final ResponseEntity block = beer.block();
     }
 
-    @Test
-    void getBeerById() {
-    }
+
 
 
     @Test
@@ -72,7 +98,5 @@ class BeerClientImplTest {
     void deleteBeerById() {
     }
 
-    @Test
-    void getBeerByUPC() {
-    }
+
 }
