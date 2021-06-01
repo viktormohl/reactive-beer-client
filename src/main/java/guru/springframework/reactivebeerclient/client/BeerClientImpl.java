@@ -6,6 +6,7 @@ import guru.springframework.reactivebeerclient.model.BeerPagedList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -58,23 +59,21 @@ public class BeerClientImpl implements BeerClient {
     }
 
     @Override
-    public Mono<ResponseEntity> createBeer(BeerDto beerDto) {
-        return null;
-
-//        return webClient.put()
-//                .uri(WebClientProperties.BEER)
-//                .bodyValue(beerDto)
-//                .retrieve()
-//                .bodyToMono();
+    public Mono<ResponseEntity<Void>> createBeer(BeerDto beerDto) {
+        return webClient.post()
+                .uri(WebClientProperties.BEER)
+                .body(BodyInserters.fromValue(beerDto))
+                .retrieve()
+                .toBodilessEntity();
     }
 
     @Override
-    public Mono<ResponseEntity> updateBeer(BeerDto beerDto) {
+    public Mono<ResponseEntity<Void>> updateBeer(BeerDto beerDto) {
         return null;
     }
 
     @Override
-    public Mono<ResponseEntity> deleteBeerById(UUID id) {
+    public Mono<ResponseEntity<Void>> deleteBeerById(UUID id) {
         return null;
     }
 

@@ -5,6 +5,7 @@ import guru.springframework.reactivebeerclient.model.BeerDto;
 import guru.springframework.reactivebeerclient.model.BeerPagedList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Mono;
 
@@ -48,7 +49,7 @@ class BeerClientImplTest {
 
     @Test
     void getBeerById() {
-        final Mono<BeerPagedList> beerPagedListMono = beerClient.listBeers(1,1, null, null, null);
+        final Mono<BeerPagedList> beerPagedListMono = beerClient.listBeers(1, 1, null, null, null);
         final BeerPagedList pagedList = beerPagedListMono.block();
         assertThat(pagedList).isNotNull();
         assertThat(pagedList.getContent().size()).isEqualTo(1);
@@ -76,19 +77,19 @@ class BeerClientImplTest {
 
     @Test
     void createBeer() {
-        BeerDto beerDto = new BeerDto();
-        beerDto.setBeerName("Franziskaner Weissbier");
-        beerDto.setBeerStyle("Weissbier");
-        beerDto.setUpc("25450");
-        beerDto.setQuantityOnHand(40);
-        beerDto.setPrice(new BigDecimal("24,99"));
+        BeerDto beerDto = BeerDto.builder()
+                .beerName("Franziskaner Weissbier")
+                .beerStyle("Weissbier")
+                .upc("25450")
+                .quantityOnHand(40)
+                .price(new BigDecimal("24.99"))
+                .build();
 
-        final Mono<ResponseEntity> beer = beerClient.createBeer(beerDto);
-        final ResponseEntity block = beer.block();
+        final Mono<ResponseEntity<Void>> responseEntityMono = beerClient.createBeer(beerDto);
+        final ResponseEntity<Void> responseEntity = responseEntityMono.block();
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     }
-
-
-
 
     @Test
     void updateBeer() {
