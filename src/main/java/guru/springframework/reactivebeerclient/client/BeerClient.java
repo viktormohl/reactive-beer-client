@@ -19,7 +19,7 @@ public interface BeerClient {
 
     Mono<ResponseEntity<Void>> createBeer(BeerDto beerDto);
 
-    Mono<ResponseEntity<Void>> updateBeer(BeerDto beerDto);
+    Mono<ResponseEntity<Void>> updateBeer(UUID beerId, BeerDto beerDto);
 
     Mono<ResponseEntity<Void>> deleteBeerById(UUID id);
 

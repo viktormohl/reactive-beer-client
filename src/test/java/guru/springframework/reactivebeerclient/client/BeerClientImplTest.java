@@ -19,7 +19,7 @@ class BeerClientImplTest {
     BeerClientImpl beerClient;
 
     @BeforeEach
-    void setUp() {
+    void setUp() { // schnellere ausführung, falls die Initialisierung nicht über Spring abläuft
         beerClient = new BeerClientImpl(new WebClientConfig().webClient());
     }
 
@@ -81,18 +81,37 @@ class BeerClientImplTest {
                 .beerName("Franziskaner Weissbier")
                 .beerStyle("Weissbier")
                 .upc("25450")
-                .quantityOnHand(40)
                 .price(new BigDecimal("24.99"))
                 .build();
 
         final Mono<ResponseEntity<Void>> responseEntityMono = beerClient.createBeer(beerDto);
         final ResponseEntity<Void> responseEntity = responseEntityMono.block();
+
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     }
 
     @Test
     void updateBeer() {
+        final Mono<BeerPagedList> beerPagedListMono = beerClient.listBeers(1, 1, null, null, null);
+        final BeerPagedList pagedList = beerPagedListMono.block();
+        assertThat(pagedList).isNotNull();
+        assertThat(pagedList.getContent().size()).isEqualTo(1);
+
+        final BeerDto firstBeer = pagedList.getContent().get(0);
+
+        BeerDto updatedBeer = BeerDto.builder()
+                .beerName("Franziskaner Weissbier")
+                .beerStyle(firstBeer.getBeerStyle())
+                .upc(firstBeer.getUpc())
+                .price(firstBeer.getPrice())
+                .build();
+
+        Mono<ResponseEntity<Void>> responseEntityMono = beerClient.updateBeer(firstBeer.getId(), updatedBeer);
+        ResponseEntity<Void> updatedBeerMono = responseEntityMono.block();
+
+        assertThat(updatedBeerMono).isNotNull();
+        assertThat(updatedBeerMono.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 
     @Test

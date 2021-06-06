@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
+ * <a href="https://sfg-beer-works.github.io/brewery-api/#tag/Beer-Service">API-Ref</a>
  * Created by jt on 3/13/21.
  */
 @Service
@@ -68,8 +69,15 @@ public class BeerClientImpl implements BeerClient {
     }
 
     @Override
-    public Mono<ResponseEntity<Void>> updateBeer(BeerDto beerDto) {
-        return null;
+    public Mono<ResponseEntity<Void>> updateBeer(UUID beerId, BeerDto beerDto) {
+        return webClient.put()
+                .uri(uriBuilder -> uriBuilder
+                        .path(WebClientProperties.BEER_BY_ID)
+                        .build(beerId)
+                )
+                .bodyValue(beerDto)// shortcut for .body(BodyInserters.fromValue(beerDto))
+                .retrieve()
+                .toBodilessEntity();
     }
 
     @Override
