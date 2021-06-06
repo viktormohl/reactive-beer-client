@@ -12,6 +12,8 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -133,6 +135,7 @@ class BeerClientImplTest {
 
     }
 
+    // Exception Handling
     @Test
     void deleteBeerByIdNotFoundExpectException() {
         Mono<ResponseEntity<Void>> responseEntityMono = beerClient.deleteBeerById(UUID.randomUUID());
@@ -160,6 +163,44 @@ class BeerClientImplTest {
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    // Functional Style Example
+    @Test
+    void getBeerByIdShowInventoryTrue() {
+        Mono<BeerPagedList> beerPagedListMono = beerClient.listBeers( //
+                null, null, null, null,null);
+
+        BeerPagedList pagedList = beerPagedListMono.block();
+
+        assertThat(pagedList).isNotNull();
+        UUID beerId = pagedList.getContent().get(0).getId();
+
+        Mono<BeerDto> beerDtoMono = beerClient.getBeerById(beerId, true);
+
+        BeerDto beerDto = beerDtoMono.block();
+
+        assertThat(beerDto).isNotNull();
+        assertThat(beerDto.getId()).isEqualTo(beerId);
+        assertThat(beerDto.getQuantityOnHand()).isNotNull();
+    }
+
+    @Test
+    void functionalTestGetBeerById() throws InterruptedException {
+        AtomicReference<String> beerName = new AtomicReference<>();
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+
+        beerClient.listBeers(null, null, null, null, null)
+                .map(beerPagedList -> beerPagedList.getContent().get(0).getId())
+                .map(beerId -> beerClient.getBeerById(beerId, false))
+                .flatMap(mono -> mono)
+                .subscribe(beerDto -> {
+                    beerName.set(beerDto.getBeerName()); // set value
+                    countDownLatch.countDown(); // and notify
+                });
+
+        countDownLatch.await(); // await value (signaled by countDown())
+        assertThat(beerName.get()).isEqualTo("Mango Bobs");
     }
 
 
