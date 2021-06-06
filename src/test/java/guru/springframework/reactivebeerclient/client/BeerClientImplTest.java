@@ -7,9 +7,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -129,6 +131,35 @@ class BeerClientImplTest {
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
+    }
+
+    @Test
+    void deleteBeerByIdNotFoundExpectException() {
+        Mono<ResponseEntity<Void>> responseEntityMono = beerClient.deleteBeerById(UUID.randomUUID());
+
+        assertThrows(WebClientResponseException.class, () ->{
+            ResponseEntity<Void> responseEntity = responseEntityMono.block();
+            // following will be not executed
+            assertThat(responseEntity).isNotNull();
+            assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        });
+    }
+
+    @Test
+    void deleteBeerByIdNotFoundHandleException() {
+        Mono<ResponseEntity<Void>> responseEntityMono = beerClient.deleteBeerById(UUID.randomUUID());
+
+        ResponseEntity<Void> responseEntity = responseEntityMono.onErrorResume(throwable -> {
+            if (throwable instanceof WebClientResponseException) {
+                WebClientResponseException wcre = (WebClientResponseException) throwable;
+                return Mono.just(ResponseEntity.status(wcre.getStatusCode()).build());
+            }else{
+                throw new RuntimeException(throwable);
+            }
+        }).block();
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
 
