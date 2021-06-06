@@ -83,7 +83,7 @@ class BeerClientImplTest {
     void createBeer() {
         BeerDto beerDto = BeerDto.builder()
                 .beerName("Franziskaner Weissbier")
-                .beerStyle("Weissbier")
+                .beerStyle("PILSNER")
                 .upc("25450")
                 .price(new BigDecimal("24.99"))
                 .build();
